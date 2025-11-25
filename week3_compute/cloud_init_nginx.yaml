@@ -1,0 +1,37 @@
+cat > cloud-init-nginx.yaml <<'EOF'
+package_update: true
+packages:
+  - nginx
+runcmd:
+  - systemctl enable nginx
+  - systemctl start nginx
+  - echo "Hello from Week 3 Azure VM with Nginx!" > /var/www/html/index.html
+EOF
+
+
+
+
+# Put your index.html in the correct NGINX location
+/var/www/html/
+sudo nano /var/www/html/index.html
+
+# Step-2: Set correct permissions
+sudo chown -R www-data:www-data /var/www/html
+sudo chmod -R 755 /var/www/html
+
+# Step-3: Check NGINX default config
+sudo nano /etc/nginx/sites-available/default
+
+# should exist index default follwing line
+root /var/www/html;
+index index.html index.htm;
+
+# run command
+sudo nginx -t
+
+sudo systemctl restart nginx
+
+# Test your website
+curl http://localhost
+
+
