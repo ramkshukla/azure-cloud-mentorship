@@ -6,7 +6,8 @@ on:
   push:
     branches:
       - master
-
+    paths:
+      - "capstone_project/infra/**"
 jobs:
   terraform:
     name: Terraform CI/CD
