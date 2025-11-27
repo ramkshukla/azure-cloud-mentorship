@@ -1,0 +1,11 @@
+# terraform
+**/.terraform
+**/*.tfstate
+**/*.tfstate.backup
+*.tfvars
+.terraform.lock.hcl
+
+# editor files
+.vscode/
+*.swp
+.DS_Store
