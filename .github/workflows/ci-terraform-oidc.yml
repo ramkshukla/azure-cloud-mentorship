@@ -1,0 +1,47 @@
+name: Terraform CI/CD (OIDC)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    env:
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.0
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: <APP_CLIENT_ID_FROM_AZURE>    # public app id of the SP (not secret)
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Terraform Init
+        working-directory: capstone_project/infra
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: capstone_project/infra
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: capstone_project/infra
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        working-directory: capstone_project/infra
+        run: terraform apply -auto-approve tfplan
