@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {},
+  "resources": [
+    {
+      "type": "Microsoft.Consumption/budgets",
+      "apiVersion": "2021-10-01",
+      "name": "monthlyCostLimit",
+      "location": "Global",
+      "properties": {
+        "category": "Cost",
+        "amount": 100,
+        "timeGrain": "Monthly",
+        "timePeriod": {
+          "startDate": "2025-11-01T00:00:00Z",
+          "endDate": "2027-11-01T00:00:00Z"
+        },
+        "notifications": {
+          "Actual_GreaterThan_80_Percent": {
+            "enabled": true,
+            "operator": "GreaterThan",
+            "threshold": 80,
+            "contactEmails": [ "Ram.Shukla@rsystems.com" ]
+          }
+        }
+      }
+    }
+  ]
+}
