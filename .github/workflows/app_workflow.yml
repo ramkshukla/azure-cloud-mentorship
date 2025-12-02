@@ -1,0 +1,48 @@
+name: App Deploy (static website)
+
+on:
+  push:
+      branches:
+        - master
+      paths:
+        - "capstone_project/app/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Azure CLI
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az version
+            echo "Azure CLI installed successfully"
+
+      - name: Get Storage Accout Key
+        env: 
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        run: |
+          az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
+          SA=$(az storage account list --query "[?contains(name, 'capstone')].name | [0]" -o tsv)
+          echo "SA_NAME=$SA" >> $GITHUB_ENV
+          key=$(az storage account keys list -g $(terraform -chdir=capstone_project/infra output -raw resource_group_name) -n $SA --query "[0].value" -o tsv)
+          echo "STORAGE_KEY=$KEY" >> $GITHUB_ENV
+
+      - name: Upload static files to $web
+        env:
+          AZURE_STORAGE_ACCOUNT: ${{ env.SA_NAME }}
+          AZURE_STORAGE_KEY: ${{ env.STORAGE_KEY }}
+        run: |
+          az storage blob upload-batch --account-name $AZURE_STORAGE_ACCOUNT --account-key $AZURE_STORAGE_KEY --source capstone/app --destination '$web'
+
+      - name:
+        run: | 
+          SA=${{ env.SA_NAME }}
+          echo "STATIC site: https://${SA}.z13.web.core.windows.net/"

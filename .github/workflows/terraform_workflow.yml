@@ -7,7 +7,7 @@ on:
     branches:
       - master
     paths-ignore:
-      - "capstone_project/infra/**"
+      - "wwek7_terraform_iac/terraform/**"
 jobs:
   terraform:
     name: Terraform CI/CD
